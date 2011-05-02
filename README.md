@@ -15,9 +15,11 @@ Build
 -----
 
 The build the low-level bindings run
+
     $ node-waf configure build
 
 If you have a dirfile, try playing with bindings_test.js
+
     $ vi bindings_test.js
     (Update the path_to_dirfile and field_name variables)
     $ node bindings_test.js

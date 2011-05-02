@@ -1,7 +1,9 @@
 //update these settings to match a test environment on your system
 var path_to_dirfile = '/data/etc/defile.lnk'
 var field_name = 'N18C04'
+var extra_names = ['N19C05', 'N17C20']
 
+//test the bindings
 var bindings = require('./build/default/getdata_bindings')
 var d = new bindings.Dirfile()
 d.open('/data/etc/madeup', function (err) {
@@ -30,3 +32,19 @@ d.open(path_to_dirfile, function (err) {
 	} })
     } })
 
+//test the listener
+var listener = require('./dirfilewatcher')
+var dfw = new listener.DirfileWatcher(path_to_dirfile)
+dfw.addField(extra_names)
+dfw.addField(field_name)
+dfw.on('data', function(data) {
+  console.log("Got new data")
+  console.dir(data)
+})
+setTimeout(function() { 
+    dfw.changePeriod(1000)
+    dfw.test_str = "Changed string"
+  }, 2500);
+setTimeout(function() { 
+    dfw.changePeriod(0)
+  }, 5000)

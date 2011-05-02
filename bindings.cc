@@ -1,8 +1,3 @@
-/* This code is PUBLIC DOMAIN, and is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND. See the accompanying 
- * LICENSE file.
- */
-
 #include <v8.h>
 #include <node.h>
 
@@ -10,10 +5,9 @@
 #include <string>
 #include <getdata.h>
 
-/* Argument checking macros
- *  Check index I of Argument array for correct type, assigns to VAR
- *  NB: dangerous macros. Not wrapped in do..while block because of declarations
- */
+// Argument checking macros
+//  Check index I of Argument array for correct type, assigns to VAR
+//  NB: dangerous macros. Not wrapped in do..while block because of declarations
 #define REQ_FUN_ARG(I, VAR)			                            \
   if (args.Length() <= (I) || !args[I]->IsFunction())	                    \
     return v8::ThrowException(v8::Exception::TypeError(                     \
@@ -43,8 +37,6 @@ public:
     v8::HandleScope scope;
 
     v8::Local<v8::FunctionTemplate> t = v8::FunctionTemplate::New(New);
-
-    //NB: hello world example had a static persistent template used here
     t->InstanceTemplate()->SetInternalFieldCount(1);  //field used by (un)wrap
     t->SetClassName(v8::String::NewSymbol("Dirfile"));
 
@@ -72,6 +64,7 @@ public:
     return args.This();
   }
 
+  // Generecized interface to doing blocking getdata calls via EIO
   enum res_t {res_none, res_int, res_double};
   struct dirfile_request_t {
     Dirfile* d;
@@ -151,18 +144,19 @@ public:
     return 0;
   }
 
+
+  /////////////////////////////////////////////////////////////
+  // Implementation of Dirfile object methods
   static v8::Handle<v8::Value> Open(const v8::Arguments& args)
   {
     return DirfileRequest(EIO_Open, args, 0, -1, 1);
   }
-  //TODO can this return void?
   static int EIO_Open(eio_req *req)
   {
     dirfile_request_t* dreq = static_cast<dirfile_request_t*>(req->data);
     dreq->d->d_ = gd_open(dreq->name.c_str(), GD_RDONLY);
     return 0;
   }
-
 
   static v8::Handle<v8::Value> Nframes(const v8::Arguments& args)
   {
@@ -176,7 +170,7 @@ public:
     return 0;
   }
 
-  //TODO if  binary Buffers added, make GetData fetch more than single sample
+  //TODO upgrade to more than single samples, using Buffer? hard for binary data
   static v8::Handle<v8::Value> GetData(const v8::Arguments& args)
   {
     return DirfileRequest(EIO_GetData, args, 0, 1, 2);
