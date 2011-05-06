@@ -1,4 +1,6 @@
-
+import Options
+from os import unlink, symlink, chdir
+from os.path import exists, lexists, dirname, basename
 
 def set_options(opt):
   opt.tool_options("compiler_cxx")
@@ -18,4 +20,16 @@ def build(bld):
   #obj.lib = "getdata"
   obj.uselib = "GETDATA"
   obj.target = "getdata_bindings"
-  obj.source = "bindings.cc"
+  obj.source = "lib/bindings.cc"
+
+def shutdown():
+  # HACK (copied from other package) to link build result
+  link_loc = 'lib/getdata_bindings.node'
+  if Options.commands['clean']:
+    if lexists(link_loc): unlink(link_loc)
+  else:
+    if exists('build/default/getdata_bindings.node') and not exists(link_loc):
+      chdir(dirname(link_loc))
+      symlink('../build/default/getdata_bindings.node', basename(link_loc))
+
+
